@@ -32,6 +32,7 @@ import software.amazon.awssdk.services.glue.model.SchemaId;
 import software.amazon.awssdk.services.glue.model.SchemaVersionNumber;
 
 import java.io.IOException;
+import java.util.UUID;
 
 public class GlueSchemaRegistryClient implements SchemaRegistryClient {
 
@@ -64,6 +65,17 @@ public class GlueSchemaRegistryClient implements SchemaRegistryClient {
                 .build();
 
         final GetSchemaVersionResponse schemaVersionResponse = getSchemaVersionResponse(schemaName, schemaVersionNumber);
+
+        return createRecordSchema(schemaVersionResponse);
+    }
+
+    @Override
+    public RecordSchema getSchema(UUID schemaVersionId) throws IOException, SchemaNotFoundException {
+        final GetSchemaVersionResponse schemaVersionResponse = client.getSchemaVersion(
+                GetSchemaVersionRequest.builder()
+                        .schemaVersionId(schemaVersionId.toString())
+                        .build()
+        );
 
         return createRecordSchema(schemaVersionResponse);
     }
