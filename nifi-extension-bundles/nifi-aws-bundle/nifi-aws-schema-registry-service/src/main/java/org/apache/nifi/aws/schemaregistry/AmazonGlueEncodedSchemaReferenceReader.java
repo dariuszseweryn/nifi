@@ -27,7 +27,7 @@ public class AmazonGlueEncodedSchemaReferenceReader extends AbstractControllerSe
     private static final Set<SchemaField> SUPPLIED_SCHEMA_FIELDS = Set.of(SchemaField.SCHEMA_BRANCH_NAME);
 
     @Override
-    public SchemaIdentifier getSchemaIdentifier(Map<String, String> variables, InputStream contentStream) throws IOException, SchemaNotFoundException {
+    public SchemaIdentifier getSchemaIdentifier(final Map<String, String> variables, final InputStream contentStream) throws SchemaNotFoundException {
         final byte[] header = new byte[HEADER_CAPACITY];
         try {
             StreamUtils.fillBuffer(contentStream, header);
@@ -41,7 +41,7 @@ public class AmazonGlueEncodedSchemaReferenceReader extends AbstractControllerSe
             throw new SchemaNotFoundException("Failed to parse Glue Schema Registry header: %s".formatted(errorStringBuilder));
         }
         final UUID schemaVersionId = deserializerDataParser.getSchemaVersionId(headerBuffer);
-        return SchemaIdentifier.builder().branch(schemaVersionId.toString()).build();
+        return SchemaIdentifier.builder().name(WireFormatSchemaVersionIdUtil.toWireFormatName(schemaVersionId)).build();
     }
 
     @Override

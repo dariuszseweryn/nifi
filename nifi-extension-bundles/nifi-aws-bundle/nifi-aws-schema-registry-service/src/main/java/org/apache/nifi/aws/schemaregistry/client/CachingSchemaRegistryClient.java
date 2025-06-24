@@ -20,10 +20,8 @@ package org.apache.nifi.aws.schemaregistry.client;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.nifi.schema.access.SchemaNotFoundException;
 import org.apache.nifi.serialization.record.RecordSchema;
 
-import java.io.IOException;
 import java.time.Duration;
 import java.util.UUID;
 
@@ -61,7 +59,7 @@ public class CachingSchemaRegistryClient implements SchemaRegistryClient {
     }
 
     @Override
-    public RecordSchema getSchema(UUID schemaVersionId) throws IOException, SchemaNotFoundException {
+    public RecordSchema getSchema(final UUID schemaVersionId) {
         return nameVersionIdCache.get(schemaVersionId);
     }
 }

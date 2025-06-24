@@ -16,9 +16,6 @@
  */
 package org.apache.nifi.aws.schemaregistry;
 
-import com.amazonaws.services.schemaregistry.common.configs.GlueSchemaRegistryConfiguration;
-import com.amazonaws.services.schemaregistry.deserializers.GlueSchemaRegistryDeserializerDataParser;
-import com.amazonaws.services.schemaregistry.deserializers.GlueSchemaRegistryDeserializerFactory;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.annotation.lifecycle.OnEnabled;
@@ -47,7 +44,6 @@ import software.amazon.awssdk.http.apache.ApacheHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.glue.GlueClient;
 import software.amazon.awssdk.services.glue.GlueClientBuilder;
-import software.amazon.awssdk.services.glue.model.DataFormat;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.TrustManager;
@@ -187,14 +183,16 @@ public class AmazonGlueSchemaRegistry extends AbstractControllerService implemen
 
     @Override
     public RecordSchema retrieveSchema(final SchemaIdentifier schemaIdentifier) throws IOException, SchemaNotFoundException {
-        final Optional<String> branch = schemaIdentifier.getBranch();
-        if (branch.isPresent()) {
-            return client.getSchema(UUID.fromString(branch.get()));
-        }
-
         final String schemaName = schemaIdentifier.getName().orElseThrow(
                 () -> new SchemaNotFoundException("Cannot retrieve schema because Schema Name is not present")
         );
+
+        if (WireFormatSchemaVersionIdUtil.isWireFormatName(schemaName)) {
+            final UUID schemaVersionId = WireFormatSchemaVersionIdUtil.fromWireFormatName(schemaName).orElseThrow(
+                    () -> new SchemaNotFoundException("Cannot retrieve schema because Schema Name does not contain a valid Schema Version ID: " + schemaName)
+            );
+            return client.getSchema(schemaVersionId);
+        }
 
         final OptionalInt version = schemaIdentifier.getVersion();
 
